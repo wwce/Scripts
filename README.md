@@ -1,7 +1,3 @@
 # Miscelaneous Scripts
 
-## Azure Scripts
-
-## AWS Scripts
-
-## GCP Scripts
+Collection of Scripts
