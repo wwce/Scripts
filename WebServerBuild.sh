@@ -4,7 +4,7 @@
 # Loops continuously waiting for firewall to intialise and then loads Apache and PHP
 #
 #!/bin/bash -ex
-until resp=$(curl -s -S -g --max-time 3 --insecure "https://${FWIP}/api/?type=op&cmd=<show><chassis-ready></chassis-ready></show>&key=LUFRPT1qS2xCRmZ6WVMrREtrK00yUGt4dVRna2lkY1U9cmgyaE93L3VoZ2U3WUgxeFpGVE1wOUNtdlM2S0Z5Z25ObG8wbmZoNXpuWT0=");do
+until resp=$(curl -s -S -g --max-time 3 --insecure "https://<Firewall IP>/api/?type=op&cmd=<show><chassis-ready></chassis-ready></show>&key=<api key>");do
 if [[ $resp == *"[CDATA[yes"* ]] ; then
     break
   fi
