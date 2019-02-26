@@ -1,4 +1,4 @@
-Bootstrap Juiceshop and Showheaders.php to a Ubuntu instance.
+Bootstrap a Juiceshop container and Showheaders.php on local Apache to a Ubuntu instance.
 
 Juiceshop will run in a container mapped to / in Apache.
 Showheaders will run as /showheaders/index.php
