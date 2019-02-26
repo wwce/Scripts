@@ -7,7 +7,7 @@ sudo echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" | sudo tee
 
 # Install apache and docker
 sudo apt-get update -q &&
-export DEBIAN_FRONTEND=noninteractive | sudo apt-get upgrade -qy &&
+sudo DEBIAN_FRONTEND=noninteractive apt-get upgrade -q -y -u  -o Dpkg::Options::="--force-confdef" --allow-downgrades --allow-remove-essential --allow-change-held-packages --allow-change-held-pack$
 sudo apt-get install -qy apache2 docker-engine php7.0 libapache2-mod-php7.2 &&
 
 # Put the relevant files in place
