@@ -24,4 +24,4 @@ sudo a2enmod proxy_http &&
 sudo systemctl restart apache2.service &&
 
 # Run shake.js/logger
-sudo docker run --restart=always -d -p 8080:80 --name shake-logger -e TARGET_SOCKET=192.168.33.10:8080 wurstbrot/shake-logger &&
+sudo docker run --restart=always -d -p 8080:80 --name shake-logger -e TARGET_SOCKET=192.168.33.10:8080 wurstbrot/shake-logger
