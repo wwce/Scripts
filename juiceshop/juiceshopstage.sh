@@ -11,7 +11,7 @@ export DEBIAN_FRONTEND=noninteractive | sudo apt-get upgrade -qy &&sudo apt-get 
 sudo apt-get install -qy apache2 docker-engine php7.0 libapache2-mod-php7.2 &&
 
 # Put the relevant files in place
-sudo wget -O /etc/apache2/sites-available/000-default.conf https://raw.githubusercontent.com/wwce/Scripts/master/juiceshopdefaultsite.conf &&
+sudo wget -O /etc/apache2/sites-available/000-default.conf https://raw.githubusercontent.com/wwce/Scripts/master/juiceshop/juiceshopdefaultsite.conf &&
 # sudo cp /tmp/juice-shop/default.conf /etc/apache2/sites-available/000-default.conf
 sudo mkdir /var/www/html/showheaders/
 sudo wget -O /var/www/html/showheaders/index.php https://raw.githubusercontent.com/wwce/Scripts/master/showheaders.php  &&
