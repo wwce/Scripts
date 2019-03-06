@@ -13,6 +13,7 @@ import xml.etree.ElementTree as et
 import xml
 import time
 import argparse
+import json
 
 from pandevice import firewall
 from pandevice import updater
@@ -107,15 +108,23 @@ def getFirewallStatus(fwMgtIP, api_key):
                 logger.info("FW Chassis not ready, still waiting for dataplane")
                 return 'almost'
 
+def write_status_file(dict):
 
+    out = json.dumps(dict)
+    f = open("./deployment_status.json", "w")
+    f.write(out)
+    f.close()
 
 
 def main(fwUsername,fwPasswd):
 
+    albDns = ''
+    nlbDns = ''
+    fwMgt = ''
 
     # Set run_plan to TRUE is you wish to run terraform plan before apply
     run_plan = False
-
+    deployment_status = {}
     kwargs = {"auto-approve": True }
 
     # Class Terraform uses subprocess and setting capture_output to True will capture output
@@ -137,7 +146,18 @@ def main(fwUsername,fwPasswd):
     if run_plan:
         tf.plan(capture_output=False)
 
-    tf.apply(capture_output=False,**kwargs)
+
+    return_code1, stdout, stderr = tf.apply(capture_output=True,**kwargs)
+    if return_code1 != 2:
+        logger.info("WebInDeploy failed")
+        deployment_status = {'WebInDeploy': 'Fail'}
+        exit()
+    else:
+        deployment_status = {'WebInDeploy':'Success'}
+        write_status_file(deployment_status)
+
+
+
 
     albDns = tf.output('ALB-DNS')
     fwMgt = tf.output('MGT-IP-FW-1')
@@ -146,11 +166,12 @@ def main(fwUsername,fwPasswd):
     # fwPasswd = "PaloAlt0!123!!"
     fw_trust_ip = fwMgt
 
+
+
     logger.info("Got these values from output of first run\n\n")
     logger.info("ALB address is {}".format(albDns))
     logger.info("nlb address is {}".format(nlbDns))
     logger.info("Firewall Mgt address is {}".format(fwMgt))
-
 
 
     class FWNotUpException(Exception):
@@ -197,8 +218,15 @@ def main(fwUsername,fwPasswd):
     if run_plan:
         tf.plan(capture_output=False,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns})
 
-    tf.apply(capture_output=False,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns},**kwargs)
+    return_code2, stdout, stderr = tf.apply(capture_output=False,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns},**kwargs)
 
+    if return_code2 != 2:
+        logger.info("WebFWConfy failed")
+        deployment_status.update({'WebFWConfy': 'Fail'})
+        exit()
+    else:
+        deployment_status.update({'WebFWConfy': 'Success'})
+        write_status_file(deployment_status)
 
 
     logger.info("Commit changes to firewall")
@@ -217,7 +245,15 @@ def main(fwUsername,fwPasswd):
     if run_plan:
         tf.plan(capture_output=False,var={'alb_arn':nlbDns},**kwargs)
 
-    tf.apply(capture_output=False,var={'alb_arn':nlbDns},**kwargs)
+    return_code3, stdout, stderr = tf.apply(capture_output=False,var={'alb_arn':nlbDns},**kwargs)
+
+    if return_code3 != 2:
+        logger.info("waf_conf failed")
+        deployment_status.update({'waf_conf': 'Fail'})
+        exit()
+    else:
+        deployment_status.update({'waf_conf': 'Success'})
+        write_status_file(deployment_status)
 
 if __name__ == '__main__':
 
