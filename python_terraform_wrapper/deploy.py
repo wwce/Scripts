@@ -5,6 +5,14 @@ Paloaltonetworks Deploy_Jenkins_Hack_Demo.py
 This software is provided without support, warranty, or guarantee.
 Use at your own risk.
 """
+'''
+Outputs to file deployment_status
+
+Contents of json dict
+
+{"WebInDeploy": "Success", "WebInFWConf": "Success", "waf_conf": "Success"}
+
+'''
 
 import logging
 import ssl
