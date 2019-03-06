@@ -3,7 +3,7 @@ A python script that will wrap terraform so that we can deploy mulitiple tf file
 
 Usage:
 
-python deploy.py <fwusername> <fwpassword>
+python deploy.py 'fwusername' 'fwpassword'
   fwusername = Fw login username
   fwpassword = Fw login password
 
