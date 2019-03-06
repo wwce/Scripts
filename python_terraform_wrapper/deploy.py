@@ -5,13 +5,18 @@ Paloaltonetworks Deploy_Jenkins_Hack_Demo.py
 This software is provided without support, warranty, or guarantee.
 Use at your own risk.
 """
+
 '''
+Usage python deploy.py <fwusername> <fwpassword>
+fwusername = Fw login username
+fwpassword = Fw login password
+
+
 Outputs to file deployment_status
 
 Contents of json dict
 
 {"WebInDeploy": "Success", "WebInFWConf": "Success", "waf_conf": "Success"}
-
 '''
 
 import logging
@@ -22,6 +27,7 @@ import xml
 import time
 import argparse
 import json
+import sys
 
 from pandevice import firewall
 from pandevice import updater
@@ -124,7 +130,7 @@ def write_status_file(dict):
     f.close()
 
 
-def main(fwUsername,fwPasswd):
+def main(fwUsername, fwPasswd):
 
     albDns = ''
     nlbDns = ''
@@ -133,7 +139,7 @@ def main(fwUsername,fwPasswd):
     # Set run_plan to TRUE is you wish to run terraform plan before apply
     run_plan = False
     deployment_status = {}
-    kwargs = {"auto-approve": True }
+    kwargs = {"auto-approve": True}
 
     # Class Terraform uses subprocess and setting capture_output to True will capture output
     # capture_output = kwargs.pop('capture_output', True)
@@ -149,14 +155,19 @@ def main(fwUsername,fwPasswd):
     # Build Infrastructure
     #
 
+
+
+
     tf = Terraform(working_dir='./WebInDeploy')
 
     if run_plan:
+        print('Calling tf.plan')
         tf.plan(capture_output=False)
 
 
-    return_code1, stdout, stderr = tf.apply(capture_output=True,**kwargs)
-    if return_code1 != 2:
+    return_code1, stdout, stderr = tf.apply(capture_output=False, **kwargs)
+    print('Got return code {}'.format(return_code1))
+    if return_code1 != 0:
         logger.info("WebInDeploy failed")
         deployment_status = {'WebInDeploy': 'Fail'}
         write_status_file(deployment_status)
@@ -229,7 +240,7 @@ def main(fwUsername,fwPasswd):
 
     return_code2, stdout, stderr = tf.apply(capture_output=False,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns},**kwargs)
 
-    if return_code2 != 2:
+    if return_code2 != 0:
         logger.info("WebFWConfy failed")
         deployment_status.update({'WebFWConfy': 'Fail'})
         write_status_file(deployment_status)
@@ -257,7 +268,7 @@ def main(fwUsername,fwPasswd):
 
     return_code3, stdout, stderr = tf.apply(capture_output=False,var={'alb_arn':nlbDns},**kwargs)
 
-    if return_code3 != 2:
+    if return_code3 != 0:
         logger.info("waf_conf failed")
         deployment_status.update({'waf_conf': 'Fail'})
         write_status_file(deployment_status)
@@ -268,12 +279,9 @@ def main(fwUsername,fwPasswd):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Build Jenkins Exploit Demo')
-    parser.add_argument('--username', type=str, help='Firewall management Username')
-    parser.add_argument('--password', type=str, help='Firewall management Password')
-    args = parser.parse_args()
 
-    main(args.username, args.password)
+    main(sys.argv[1], sys.argv[2])
+
 
 
 
