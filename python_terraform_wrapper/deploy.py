@@ -151,6 +151,7 @@ def main(fwUsername,fwPasswd):
     if return_code1 != 2:
         logger.info("WebInDeploy failed")
         deployment_status = {'WebInDeploy': 'Fail'}
+        write_status_file(deployment_status)
         exit()
     else:
         deployment_status = {'WebInDeploy':'Success'}
@@ -223,6 +224,7 @@ def main(fwUsername,fwPasswd):
     if return_code2 != 2:
         logger.info("WebFWConfy failed")
         deployment_status.update({'WebFWConfy': 'Fail'})
+        write_status_file(deployment_status)
         exit()
     else:
         deployment_status.update({'WebFWConfy': 'Success'})
@@ -250,6 +252,7 @@ def main(fwUsername,fwPasswd):
     if return_code3 != 2:
         logger.info("waf_conf failed")
         deployment_status.update({'waf_conf': 'Fail'})
+        write_status_file(deployment_status)
         exit()
     else:
         deployment_status.update({'waf_conf': 'Success'})
