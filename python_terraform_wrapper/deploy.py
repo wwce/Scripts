@@ -226,7 +226,7 @@ if __name__ == '__main__':
     parser.add_argument('--password', type=str, help='Firewall management Password')
     args = parser.parse_args()
 
-    main(username=args.username, password=args.password)
+    main(args.username, args.password)
 
 
 
