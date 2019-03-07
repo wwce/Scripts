@@ -39,6 +39,9 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
+aws_access_key = 'AKIAIARPPDDSTMO32GGQ'
+aws_secret_key = '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'
+
 
 
 
@@ -126,6 +129,33 @@ def write_status_file(dict):
     f.close()
 
 
+def getServerStatus(IP) :
+    """
+    Gets the firewall status by sending the API request show chassis status.
+    :param fwMgtIP:  IP Address of firewall interface to be probed
+    :param api_key:  Panos API key
+    """
+    global gcontext
+
+    cmd = urllib.request.Request("http://" + IP + "/")
+    # Send command to fw and see if it times out or we get a response
+
+    try:
+        response = urllib.request.urlopen(cmd, data=None, timeout=5).read()
+    except urllib.error.HTTPError as e:
+        # Return code error (e.g. 404, 501, ...)
+        logger.info('Jenkins Server Returned HTTPError: {}'.format(e.code))
+        return ('server_down')
+    except urllib.error.URLError as e:
+        # Not an HTTP-specific error (e.g. connection refused)
+        logger.info('Jenkins Server Did not respond to HTTP request: {}'.format(e.reason))
+        return ('server_down')
+    else:
+        # 200
+        logger.info('Jenkins Server responded with HTTP 200 code')
+        return ('server_up')
+
+
 def main(fwUsername, fwPasswd):
 
     albDns = ''
@@ -162,7 +192,9 @@ def main(fwUsername, fwPasswd):
 
 
     return_code1, stdout, stderr = tf.apply(capture_output=False,skip_plan=True,**kwargs)
+    #return_code1 =0
     print('Got return code {}'.format(return_code1))
+
     if return_code1 != 0:
         logger.info("WebInDeploy failed")
         deployment_status = {'WebInDeploy': 'Fail'}
@@ -182,12 +214,38 @@ def main(fwUsername, fwPasswd):
     # fwPasswd = "PaloAlt0!123!!"
     fw_trust_ip = fwMgt
 
+    #
+    # Apply WAF Rules
+    #
 
+    tf = Terraform(working_dir='./waf_conf')
+    tf.cmd('init')
+    kwargs = {"auto-approve": True }
+
+    logger.info("Applying WAF config to App LB")
+
+    if run_plan:
+        tf.plan(capture_output=False,var={'alb_arn':nlbDns},**kwargs)
+
+    return_code3, stdout, stderr = tf.apply(capture_output=False,skip_plan=True,var={'alb_arn':nlbDns,'int-nlb-fqdn':nlbDns},**kwargs)
+
+    if return_code3 != 0:
+        logger.info("waf_conf failed")
+        deployment_status.update({'waf_conf': 'Fail'})
+        write_status_file(deployment_status)
+        exit()
+    else:
+        deployment_status.update({'waf_conf': 'Success'})
+        write_status_file(deployment_status)
 
     logger.info("Got these values from output of first run\n\n")
     logger.info("ALB address is {}".format(albDns))
     logger.info("nlb address is {}".format(nlbDns))
     logger.info("Firewall Mgt address is {}".format(fwMgt))
+
+    #
+    # Check firewall is up and running
+    #
 
 
     class FWNotUpException(Exception):
@@ -226,6 +284,8 @@ def main(fwUsername, fwPasswd):
     time.sleep(180)
     updateHandle.install()
 
+
+
     #
     # Configure Firewall
     #
@@ -239,15 +299,15 @@ def main(fwUsername, fwPasswd):
     if run_plan:
         tf.plan(capture_output=False,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns})
 
-    return_code2, stdout, stderr = tf.apply(capture_output=False,skip_plan=True,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns},**kwargs)
-
+    return_code2, stdout, stderr = tf.apply(capture_output=False,skip_plan=True,var={'mgt-ipaddress-fw1':fwMgt, 'nlb-dns':nlbDns,'aws_access_key':aws_access_key,'aws_secret_key':aws_secret_key},**kwargs)
+    #return_code2 = 0
     if return_code2 != 0:
         logger.info("WebFWConfy failed")
         deployment_status.update({'WebFWConfy': 'Fail'})
         write_status_file(deployment_status)
         exit()
     else:
-        deployment_status.update({'WebFWConfy': 'Success'})
+        deployment_status.update({'WebFWConf': 'Success'})
         write_status_file(deployment_status)
 
 
@@ -255,29 +315,27 @@ def main(fwUsername, fwPasswd):
 
     fw.commit()
 
-    #
-    # Apply WAF Rules
-    #
+    logger.info('Checking if Jenkins Server is ready')
 
-    tf = Terraform(working_dir='./waf_conf')
-    tf.cmd('init')
-    kwargs = {"auto-approve": True }
+    tf = Terraform(working_dir='./WebInDeploy')
+    albDns = tf.output('ALB-DNS')
+    count = 0
+    max_tries = 3
+    while True:
+        if count < max_tries:
+            res =getServerStatus(albDns)
+            if res == 'server_down':
+                count = count + 1
+                time.sleep(2)
+                continue
+            elif res == 'server_up':
+                break
+        else:
+            break
+    logger.info('Jenkins Server is ready')
+    logger.info('\n\n   ### Deployment Complete ###')
+    logger.info('\n\n   Connect to Jenkins Server at http://{}'.format(albDns))
 
-    logger.info("Applying WAF config to App LB")
-
-    if run_plan:
-        tf.plan(capture_output=False,var={'alb_arn':nlbDns},**kwargs)
-
-    return_code3, stdout, stderr = tf.apply(capture_output=False,skip_plan=True,var={'alb_arn':nlbDns},**kwargs)
-
-    if return_code3 != 0:
-        logger.info("waf_conf failed")
-        deployment_status.update({'waf_conf': 'Fail'})
-        write_status_file(deployment_status)
-        exit()
-    else:
-        deployment_status.update({'waf_conf': 'Success'})
-        write_status_file(deployment_status)
 
 if __name__ == '__main__':
 
