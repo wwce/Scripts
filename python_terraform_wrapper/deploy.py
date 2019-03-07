@@ -39,8 +39,8 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
-aws_access_key = 'AKIAIARPPDDSTMO32GGQ'
-aws_secret_key = '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'
+aws_access_key = 'AWS Key'
+aws_secret_key = 'AWS Secret Key'
 
 
 
