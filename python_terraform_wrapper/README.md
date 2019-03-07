@@ -4,7 +4,7 @@
 
   # Usage: 
   
-  python deploy.py <fwusername> <fwpassword> 
+  python deploy.py fwusername fwpassword 
   fwusername = Fw login username
   fwpassword = Fw login password
   
