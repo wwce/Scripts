@@ -4,12 +4,12 @@
 
   # Usage: 
   
-  python deploy.py fwusername fwpassword 
-  fwusername = Fw login username
-  fwpassword = Fw login password
+  python deploy.py fwusername fwpassword .   
+  fwusername = Fw login username . 
+  fwpassword = Fw login password . 
   
 
   # Outputs:
-  Outputs to file deployment_status
-  Contents of json dict
+  Outputs to file deployment_status . 
+  Contents of json dict . 
   {"WebInDeploy": "Success", "WebInFWConf": "Success", "waf_conf": "Success"}
