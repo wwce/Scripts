@@ -7,11 +7,6 @@ Use at your own risk.
 """
 
 '''
-Usage python deploy.py <fwusername> <fwpassword>
-fwusername = Fw login username
-fwpassword = Fw login password
-
-
 Outputs to file deployment_status
 
 Contents of json dict
@@ -120,6 +115,7 @@ def getFirewallStatus(fwMgtIP, api_key):
                 return 'yes'
             else:
                 logger.info("FW Chassis not ready, still waiting for dataplane")
+                time.sleep(10)
                 return 'almost'
 
 def write_status_file(dict):
@@ -159,13 +155,13 @@ def main(fwUsername, fwPasswd):
 
 
     tf = Terraform(working_dir='./WebInDeploy')
-
+    tf.cmd('init')
     if run_plan:
         print('Calling tf.plan')
         tf.plan(capture_output=False)
 
 
-    return_code1, stdout, stderr = tf.apply(capture_output=False, **kwargs)
+    return_code1, stdout, stderr = tf.apply(capture_output=False,skip_plan=True,**kwargs)
     print('Got return code {}'.format(return_code1))
     if return_code1 != 0:
         logger.info("WebInDeploy failed")
@@ -212,6 +208,10 @@ def main(fwUsername, fwPasswd):
             time.sleep(60)
             continue
             #raise FWNotUpException('FW is not up!')
+        elif err == 'almost':
+            logger.info("MGT up waiting for dataplane")
+            time.sleep(20)
+            continue
         elif err == 'yes':
             logger.info("[INFO]: FW is up")
             break
@@ -231,6 +231,7 @@ def main(fwUsername, fwPasswd):
     #
 
     tf = Terraform(working_dir='./WebInFWConf')
+    tf.cmd('init')
     kwargs = {"auto-approve": True }
 
     logger.info("Applying addtional config to firewall")
@@ -238,7 +239,7 @@ def main(fwUsername, fwPasswd):
     if run_plan:
         tf.plan(capture_output=False,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns})
 
-    return_code2, stdout, stderr = tf.apply(capture_output=False,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns},**kwargs)
+    return_code2, stdout, stderr = tf.apply(capture_output=False,skip_plan=True,var={'mgt-ipaddress-fw1':fwMgt, 'int-nlb-fqdn':nlbDns},**kwargs)
 
     if return_code2 != 0:
         logger.info("WebFWConfy failed")
@@ -259,6 +260,7 @@ def main(fwUsername, fwPasswd):
     #
 
     tf = Terraform(working_dir='./waf_conf')
+    tf.cmd('init')
     kwargs = {"auto-approve": True }
 
     logger.info("Applying WAF config to App LB")
@@ -266,7 +268,7 @@ def main(fwUsername, fwPasswd):
     if run_plan:
         tf.plan(capture_output=False,var={'alb_arn':nlbDns},**kwargs)
 
-    return_code3, stdout, stderr = tf.apply(capture_output=False,var={'alb_arn':nlbDns},**kwargs)
+    return_code3, stdout, stderr = tf.apply(capture_output=False,skip_plan=True,var={'alb_arn':nlbDns},**kwargs)
 
     if return_code3 != 0:
         logger.info("waf_conf failed")
