@@ -1,6 +1,6 @@
 # Miscelaneous Scripts
 
-Collection of Scripts
+Collection of Scripts for apply for demos, server builds, template deployments etc.
 
 ### aws-find-firewall-instances
 Script finds all PANW instances in an account and prints them to terminal
