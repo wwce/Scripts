@@ -1,5 +1,5 @@
 # azure-oms
-These files may be used to create a Docker image that listens on UTP/TCP port 514 and forwards properly-formatted syslog messages to a pre-existing Log Analytics workspace in Azure. The logs may then be viewed in Log Analytics or processed by Azure Security Center.
+These files may be used to create a Docker image that listens on UDP/TCP port 514 and forwards properly-formatted syslog messages to a pre-existing Log Analytics workspace in Azure. The logs may then be viewed in Log Analytics or processed by Azure Security Center.
 
 The dockerfile used here is based upon version 1.10.0-1 of the OMS agent container created by Microsoft:
 
