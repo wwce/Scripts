@@ -15,6 +15,7 @@ It has been updated to receive properly-formatted (i.e. CEF) syslog messages fro
 
 ## Build
 - Place all files into the same directory on the Docker machine
+- Edit the dockerfile and replace <WORKSPACE ID> and <PRIVATE KEY> with the values from your Log Analytics workspace
 - Run "docker build ."
 
 ## Run
