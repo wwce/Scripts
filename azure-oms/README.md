@@ -15,7 +15,7 @@ It has been updated to receive properly-formatted (i.e. CEF) syslog messages fro
 
 ## Build
 - Place all files into the same directory on the Docker machine
-- run "docker build ."
+- Run "docker build ."
 
 ## Run
 docker run --privileged -d -v /var/run/docker.sock:/var/run/docker.sock \
