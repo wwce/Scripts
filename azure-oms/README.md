@@ -18,9 +18,9 @@ It has been updated to receive properly-formatted (i.e. CEF) syslog messages fro
 - run "docker build ."
 
 ## Run
-<pre>
-docker run --privileged -d -v /var/run/docker.sock:/var/run/docker.sock -v /var/log:/var/log -v /var/lib/docker/containers:/var/lib/docker/containers -p 514:514/tcp -p 514:514/udp --name="omsagent" -h=`hostname` --restart=always <DOCKER IMAGE>
-</pre>
+docker run --privileged -d -v /var/run/docker.sock:/var/run/docker.sock \
+-v /var/log:/var/log -v /var/lib/docker/containers:/var/lib/docker/containers \
+-p 514:514/tcp -p 514:514/udp --name="omsagent" -h=`hostname` --restart=always {DOCKER IMAGE}
 
 ## Notes
 - This has been tested on Docker running on Ubuntu 16.04 in Azure.
