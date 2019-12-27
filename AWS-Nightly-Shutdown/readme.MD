@@ -1,6 +1,6 @@
 
   # Purpose:
-  AWS workflow to shutdown instances on a CloudWatch event schedule.
+  AWS workflow to shutdown all instances across all regions on a CloudWatch event schedule.
 
   # Usage: 
   
