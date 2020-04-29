@@ -19,7 +19,7 @@ def lambda_handler(event, context):
         #print(RunningInstances)
         for i in instances:
             taglist = {}
-            for tag in i.tags:
+            for tag in i.tags or []:
                 taglist[tag['Key'].lower()] = tag['Value']
             #print("this is the tag list")
             #print(taglist)
@@ -37,7 +37,7 @@ def lambda_handler(event, context):
                 #print(i)
                 #print("instance name")
                 instancename = " "
-                for tag in i.tags:
+                for tag in i.tags or []:
                     if 'Name'in tag['Key']:
                         instancename = tag['Value']
                         #print(instancename)
